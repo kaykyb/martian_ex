@@ -5,6 +5,8 @@ defmodule MartianEx.MixProject do
     [
       app: :martian_ex,
       version: "0.1.0",
+      description: "MartianEx allows converting Markdown text to Notion API block objects",
+      licenses: ["MIT"],
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps()
