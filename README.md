@@ -19,7 +19,7 @@ MartianEx uses Earmark to create a Markdown AST, which is then converted into No
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+MartianEx is [available in Hex](https://hex.pm/packages/martian_ex), the package can be installed
 by adding `martian_ex` to your list of dependencies in `mix.exs`:
 
 ```elixir
