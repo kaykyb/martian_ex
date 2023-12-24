@@ -87,7 +87,7 @@ defmodule MartianEx.Parser do
 
   defp parse_node({"code", attributes, children, _}) do
     language = attributes |> Map.new() |> Map.get("class", "plain text")
-    rich_text = Enum.map(children, &Common.rich_text/1)
+    rich_text = Enum.flat_map(children, &rich_text_chunks/1)
     [Blocks.code(rich_text, language)]
   end
 
@@ -158,7 +158,7 @@ defmodule MartianEx.Parser do
   defp parse_inline(text, annotations \\ [], opts \\ [])
 
   defp parse_inline(text, annotations, opts) when is_bitstring(text) do
-    [Common.rich_text(text, annotations, opts)]
+    rich_text_chunks(text, annotations, opts)
   end
 
   defp parse_inline({"del", _attributes, children, _}, annotations, opts) do
@@ -184,7 +184,7 @@ defmodule MartianEx.Parser do
 
   defp parse_inline({"code", _attributes, children, _}, annotations, opts) do
     annotations = Keyword.put(annotations, :code, true)
-    [Common.rich_text(children, annotations, opts)]
+    rich_text_chunks(children, annotations, opts)
   end
 
   defp parse_inline(_, _, _), do: []
@@ -239,5 +239,19 @@ defmodule MartianEx.Parser do
     parsed_children = Enum.flat_map(children, &parse_node/1)
 
     [Blocks.bulleted_list_item(rich_text, parsed_children)]
+  end
+
+  # Notion only supports an specific amount of characters in a paragraph
+  # this splits paragraphs into 2k chars chunks to make them writable to
+  # Notion through the API safely
+  defp chunk_text(text) do
+    Regex.scan(~r/(.){1,2000}/, text, capture: :first)
+    |> Enum.flat_map(& &1)
+  end
+
+  defp rich_text_chunks(text, annotations \\ [], options \\ []) do
+    text
+    |> chunk_text()
+    |> Enum.map(&Common.rich_text(&1, annotations, options))
   end
 end
